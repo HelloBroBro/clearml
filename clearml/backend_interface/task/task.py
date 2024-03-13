@@ -2267,6 +2267,11 @@ class Task(IdObjectBase, AccessMixin, SetupUploadMixin):
         Alternatively, you can add all requirements from a file.
         Example: Task.add_requirements('/path/to/your/project/requirements.txt')
 
+        .. note::
+            Task.add_requirements does not directly modify the task's requirements. Instead, it improves the accuracy
+            of capturing a task's Python packages. To explicitly change task requirements, use
+            Task.set_packages, which overwrites existing packages with the specified ones.
+
         :param str package_name: The package name or path to a requirements file
             to add to the "Installed Packages" section of the task.
         :param package_version: The package version requirements. If ``None``, then  use the installed version.
@@ -2305,13 +2310,14 @@ class Task(IdObjectBase, AccessMixin, SetupUploadMixin):
     def force_requirements_env_freeze(cls, force=True, requirements_file=None):
         # type: (bool, Optional[Union[str, Path]]) -> None
         """
-        Force using `pip freeze` / `conda list` to store the full requirements of the active environment
-        (instead of statically analyzing the running code and listing directly imported packages)
+        Force the use of ``pip freeze`` or ``conda list`` to capture the requirements from the active
+        environment (instead of statically analyzing the running code and listing directly imported packages).
         Notice: Must be called before `Task.init` !
 
-        :param force: Set force using `pip freeze` flag on/off
-        :param requirements_file: Optional pass requirements.txt file to use (instead of `pip freeze` or automatic
-            analysis)
+        :param force: If ``True`` (default), force the use of ``pip freeze`` or ``conda list`` to capture the
+            requirements. If ``False``, ClearML statistically analyzes the code for requirements.
+        :param requirements_file: (Optional) Pass a requirements.txt file to specify the required packages (instead of
+            ``pip freeze`` or automatic analysis). This will overwrite any existing requirement listing.
         """
         cls._force_use_pip_freeze = requirements_file if requirements_file else bool(force)
 
